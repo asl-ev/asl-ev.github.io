@@ -7,6 +7,7 @@
     formEmail: 'info@asl-ev.com',          // البريد اللي بتوصله الطلبات (FormSubmit)
     whatsapp: '966559515585',
     phone: '0559515585',
+    leadHook: 'https://n8n.gorwmatic.io/webhook/asl-lead', // أتمتة العملاء: نسخة من كل طلب تروح للوحة العملاء
     mapCenter: [24.7136, 46.6753],         // الرياض
     leafletCss: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
     leafletJs: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'
@@ -61,6 +62,10 @@
     return 'ASL-' + String(d.getFullYear()).slice(2) + p(d.getMonth() + 1) + p(d.getDate()) + '-' + Math.floor(1000 + Math.random() * 9000);
   }
   function sendForm(data) {
+    // نسخة موازية للأتمتة — لا تؤثر على الإرسال الأساسي لو فشلت
+    try {
+      if (CONFIG.leadHook) fetch(CONFIG.leadHook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), keepalive: true }).catch(function () {});
+    } catch (e) {}
     var ctrl = new AbortController();
     var t = setTimeout(function () { ctrl.abort(); }, 15000);
     return fetch('https://formsubmit.co/ajax/' + CONFIG.formEmail, {
@@ -220,6 +225,16 @@
       sendForm(data).then(function () {
         $('#orderNo').textContent = no;
         $('#okMail').textContent = f.email.value.trim();
+        var okWa = $('#okWa');
+        if (!okWa) {
+          var closeBtn = $('#okMail').closest('.pane').querySelector('[data-close]');
+          okWa = document.createElement('a');
+          okWa.id = 'okWa'; okWa.className = 'btn btn-line'; okWa.target = '_blank'; okWa.rel = 'noopener';
+          okWa.style.marginInlineEnd = '8px';
+          okWa.textContent = 'تابع طلبك على واتساب';
+          if (closeBtn) closeBtn.parentNode.insertBefore(okWa, closeBtn);
+        }
+        okWa.href = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + encodeURIComponent('مرحبًا، أتابع طلبي رقم ' + no);
         show(3);
       }).catch(function () {
         var txt = 'مرحبًا، أرغب في طلب خدمة من أصل للتقييم العقاري\n' +
