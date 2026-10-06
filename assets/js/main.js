@@ -390,3 +390,14 @@
 
   var y = $('#year'); if (y) y.textContent = new Date().getFullYear();
 })();
+
+/* ================= دردشة أصل المباشرة (شات ووت) ================= */
+(function (d, t) {
+  window.chatwootSettings = { position: 'left', type: 'standard', locale: 'ar', launcherTitle: 'تحدث معنا' };
+  var BASE_URL = 'https://chat.gorwmatic.io';
+  var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+  g.src = BASE_URL + '/packs/js/sdk.js';
+  g.async = true;
+  s.parentNode.insertBefore(g, s);
+  g.onload = function () { window.chatwootSDK.run({ websiteToken: 'hHJxiBoT2xJWFPtVBi6Mf9mo', baseUrl: BASE_URL }); };
+})(document, 'script');
